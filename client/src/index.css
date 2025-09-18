@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 4%);
+  --foreground: hsl(0, 0%, 95%);
+  --card: hsl(240, 6%, 10%);
+  --card-foreground: hsl(0, 0%, 95%);
+  --popover: hsl(240, 6%, 10%);
+  --popover-foreground: hsl(0, 0%, 95%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(150, 61%, 40%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 5%, 26%);
+  --muted-foreground: hsl(0, 0%, 60%);
+  --accent: hsl(177, 70%, 41%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 6%, 20%);
+  --input: hsl(240, 6%, 16%);
+  --ring: hsl(262, 83%, 58%);
+  --chart-1: hsl(262, 83%, 58%);
+  --chart-2: hsl(177, 70%, 41%);
+  --chart-3: hsl(150, 61%, 40%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
+  --sidebar: hsl(240, 6%, 10%);
+  --sidebar-foreground: hsl(0, 0%, 95%);
+  --sidebar-primary: hsl(262, 83%, 58%);
+  --sidebar-primary-foreground: hsl(0, 0%, 98%);
+  --sidebar-accent: hsl(177, 70%, 41%);
+  --sidebar-accent-foreground: hsl(0, 0%, 98%);
+  --sidebar-border: hsl(240, 6%, 20%);
+  --sidebar-ring: hsl(262, 83%, 58%);
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Georgia', serif;
+  --font-mono: 'Orbitron', monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.05);
+  --shadow-xs: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.1);
+  --shadow-sm: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.1), 0px 1px 2px -1px hsl(262, 83%, 58% / 0.1);
+  --shadow: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.1), 0px 1px 2px -1px hsl(262, 83%, 58% / 0.1);
+  --shadow-md: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.1), 0px 2px 4px -1px hsl(262, 83%, 58% / 0.1);
+  --shadow-lg: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.15), 0px 4px 6px -1px hsl(262, 83%, 58% / 0.1);
+  --shadow-xl: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.15), 0px 8px 10px -1px hsl(262, 83%, 58% / 0.1);
+  --shadow-2xl: 0px 2px 0px 0px hsl(262, 83%, 58% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(240, 10%, 4%);
+  --foreground: hsl(0, 0%, 95%);
+  --card: hsl(240, 6%, 10%);
+  --card-foreground: hsl(0, 0%, 95%);
+  --popover: hsl(240, 6%, 10%);
+  --popover-foreground: hsl(0, 0%, 95%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(150, 61%, 40%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 5%, 26%);
+  --muted-foreground: hsl(0, 0%, 60%);
+  --accent: hsl(177, 70%, 41%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 6%, 20%);
+  --input: hsl(240, 6%, 16%);
+  --ring: hsl(262, 83%, 58%);
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(240, 10%, 4%) 0%, hsl(240, 8%, 6%) 100%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .neon-border {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--card), var(--card)) padding-box,
+                linear-gradient(45deg, var(--primary), var(--accent)) border-box;
+  }
+
+  .product-card {
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-10px) rotateX(5deg);
+    box-shadow: 0 20px 40px rgba(168, 85, 247, 0.3);
+  }
+
+  .hero-glow {
+    background: radial-gradient(circle at center, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
+  }
+
+  .nav-link:hover {
+    color: var(--primary);
+    text-shadow: 0 0 10px var(--primary);
+  }
+
+  .floating-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes glow {
+    0% { box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary), 0 0 15px var(--primary); }
+    100% { box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary), 0 0 30px var(--primary); }
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-r from-primary to-accent;
+  }
+}
