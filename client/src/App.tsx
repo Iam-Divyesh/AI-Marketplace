@@ -7,10 +7,10 @@ import { ThemeProvider } from "./components/theme-provider";
 import Navigation from "./components/layout/navigation";
 import Footer from "./components/layout/footer";
 import AIChatWidget from "./components/ai-chat-widget";
-import Home from "@/pages/home";
-import Marketplace from "@/pages/marketplace";
-import Dashboard from "@/pages/dashboard";
-import NotFound from "@/pages/not-found";
+import Home from "./pages/home";
+import Marketplace from "./pages/marketplace";
+import Dashboard from "./pages/dashboard";
+import NotFound from "./pages/not-found";
 
 function Router() {
   return (

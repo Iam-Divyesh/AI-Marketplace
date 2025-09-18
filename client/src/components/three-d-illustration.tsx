@@ -1,69 +1,40 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
-import { Mesh } from "three";
-
-function FloatingPalette() {
-  const meshRef = useRef<Mesh>(null!);
-  const [hovered, setHover] = useState(false);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.5;
-      meshRef.current.position.y = Math.sin(state.clock.getElapsedTime()) * 0.3;
-    }
-  });
-
-  return (
-    <mesh
-      ref={meshRef}
-      scale={hovered ? 1.2 : 1}
-      onPointerOver={() => setHover(true)}
-      onPointerOut={() => setHover(false)}
-    >
-      <torusGeometry args={[1.2, 0.3, 16, 32]} />
-      <meshStandardMaterial
-        color={hovered ? "#a855f7" : "#06b6d4"}
-        emissive={hovered ? "#7c3aed" : "#0891b2"}
-        emissiveIntensity={0.3}
-      />
-    </mesh>
-  );
-}
-
-function FloatingOrbs() {
-  return (
-    <>
-      <mesh position={[2.5, 1, 0]}>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshStandardMaterial color="#10b981" emissive="#065f46" emissiveIntensity={0.5} />
-      </mesh>
-      <mesh position={[-2.5, -0.5, 0]}>
-        <sphereGeometry args={[0.15, 16, 16]} />
-        <meshStandardMaterial color="#8b5cf6" emissive="#5b21b6" emissiveIntensity={0.5} />
-      </mesh>
-      <mesh position={[0, -2, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshStandardMaterial color="#06b6d4" emissive="#0891b2" emissiveIntensity={0.5} />
-      </mesh>
-    </>
-  );
-}
-
 export default function ThreeDIllustration() {
   return (
     <div className="w-80 h-80 relative" data-testid="three-d-illustration">
-      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 animate-pulse-slow" />
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 60 }}
-        className="relative z-10"
-      >
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} color="#a855f7" />
-        <pointLight position={[-10, -10, 5]} intensity={0.5} color="#06b6d4" />
-        <FloatingPalette />
-        <FloatingOrbs />
-      </Canvas>
-      <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent pointer-events-none" />
+      {/* Background gradient */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 animate-pulse" />
+      
+      {/* Main floating element */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-32 h-32 relative">
+          {/* Central torus-like shape */}
+          <div 
+            className="absolute inset-4 border-8 border-cyan-400 rounded-full animate-spin"
+            style={{ 
+              animation: 'spin 8s linear infinite',
+              borderStyle: 'solid solid transparent transparent'
+            }}
+          />
+          <div 
+            className="absolute inset-6 border-6 border-purple-400 rounded-full"
+            style={{ 
+              animation: 'spin 6s linear infinite reverse',
+              borderStyle: 'transparent solid solid transparent'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Floating orbs */}
+      <div className="absolute top-16 right-8 w-4 h-4 bg-emerald-400 rounded-full animate-bounce" 
+           style={{ animationDelay: '0s', animationDuration: '3s' }} />
+      <div className="absolute bottom-20 left-8 w-3 h-3 bg-purple-400 rounded-full animate-bounce" 
+           style={{ animationDelay: '1s', animationDuration: '4s' }} />
+      <div className="absolute bottom-8 right-16 w-2 h-2 bg-cyan-400 rounded-full animate-bounce" 
+           style={{ animationDelay: '2s', animationDuration: '5s' }} />
+
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent pointer-events-none rounded-full" />
     </div>
   );
 }
