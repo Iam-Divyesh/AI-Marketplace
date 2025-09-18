@@ -211,6 +211,8 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
+      artisanName: insertUser.artisanName || null,
+      location: insertUser.location || null,
       createdAt: new Date(),
     };
     this.users.set(id, user);
@@ -264,6 +266,7 @@ export class MemStorage implements IStorage {
     const product: Product = { 
       ...insertProduct, 
       id,
+      artisanId: insertProduct.artisanId || null,
       status: "active",
       createdAt: new Date(),
     };
@@ -294,7 +297,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const session: ChatSession = {
       id,
-      userId,
+      userId: userId || null,
       messages: [],
       createdAt: new Date(),
     };

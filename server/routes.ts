@@ -113,11 +113,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const aiResponse = await generateChatResponse(
         query,
         allProducts,
-        chatSession.messages
+        chatSession.messages || []
       );
 
       // Update chat history
-      const updatedMessages = [...chatSession.messages, query, aiResponse];
+      const updatedMessages = [...(chatSession.messages || []), query, aiResponse];
       await storage.updateChatSession(chatSession.id, updatedMessages);
 
       res.json({ 
