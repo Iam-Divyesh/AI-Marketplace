@@ -1,0 +1,71 @@
+You are a fullstack code generator.  
+Build a complete MERN (MongoDB, Express, React, Node.js) project named **ArtisanAI** – an AI-powered marketplace for local artisans.  
+It must be fully working, deployable, and bug-free.  
+
+### Requirements:
+
+**1. Frontend (React + TailwindCSS + Framer Motion + Three.js):**
+- Theme: **Dark UI with neon accents (black + purple + teal)**
+- Landing Page:
+  - Hero section with animated 3D artisan illustration (use Three.js or React-Three-Fiber).
+  - Call-to-action buttons: “Explore Products” and “Sell as Artisan”.
+- Marketplace Page:
+  - Grid layout with **3D product cards** (image, artisan name, price, category).
+  - Hover animations using Framer Motion.
+  - Filters for **price, category, and location**.
+- AI Assistant Chat:
+  - Floating chat widget (bottom-right).
+  - User can type queries like: “Show me handmade jewelry under ₹500”.
+  - Calls backend `/api/ai` to get product recommendations.
+- Artisan Dashboard (basic):
+  - Form to upload a product: name, image (URL), category, price.
+  - Preview of uploaded products in a list.
+
+**2. Backend (Node.js + Express + MongoDB):**
+- Routes:
+  - `POST /api/products` → Add a product (save to MongoDB).
+  - `GET /api/products` → Fetch all products with filters (category, price, artisan).
+  - `POST /api/ai` → Takes user query → uses OpenAI API (GPT-4o-mini) → returns recommended products.
+- Models:
+  - Product { name, description, category, price, image, artisanName, location, createdAt }
+- Middleware:
+  - CORS, body-parser, error handling.
+
+**3. AI Integration:**
+- Use OpenAI API (GPT-4o-mini or GPT-3.5-turbo) to parse user queries and recommend matching products.
+- Example:
+  - Input: “Show me pottery under ₹1000”
+  - Output: Filtered products from DB matching query.
+
+**4. Database:**
+- MongoDB Atlas (or local MongoDB).
+- Collections: Products, Users (optional).
+
+**5. Features to Work Out of the Box:**
+- Product Listing
+- Product Upload
+- AI Assistant for recommendations
+- Search + Filters
+
+**6. Deployment Ready:**
+- Frontend → Vercel
+- Backend → Render/Heroku
+- DB → MongoDB Atlas
+- Provide `.env.example` with variables:
+  - MONGO_URI
+  - OPENAI_API_KEY
+  - PORT=5000
+
+**7. Extra:**
+- Responsive (mobile-friendly).
+- Include animations on load/hover.
+- Show sample products in DB for demo.
+
+---
+
+### Output:
+- Generate full project structure with:
+  - `/frontend` → React app (UI, pages, components)
+  - `/backend` → Express server (APIs, models, controllers)
+- Include instructions in `README.md` for running locally & deploying.
+- The code must be **ready-to-run** without debugging.
