@@ -3,8 +3,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProductSchema, productQuerySchema, aiQuerySchema } from "@shared/schema";
 import { getProductRecommendations, generateChatResponse } from "./services/openai";
+import authRoutes from "./routes/auth";
+import { authenticateToken, requireArtisan, requireCustomer } from "./middleware/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.use('/api/auth', authRoutes);
+
   // Products routes
   app.get("/api/products", async (req, res) => {
     try {
