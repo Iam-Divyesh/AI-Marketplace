@@ -10,6 +10,7 @@ import { useCart } from "@/contexts/cart-context";
 import { useWishlist } from "@/contexts/wishlist-context";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
+import { Inline3DViewer } from './inline-3d-viewer';
 
 interface ProductCardProps {
   product: Product;
@@ -200,7 +201,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
               </div>
 
               {/* Action buttons */}
-              <div className="flex space-x-2 pt-2">
+              <div className="flex space-x-2 pt-2 items-center">
                 <Button
                   size="sm"
                   className="flex-1"
@@ -213,7 +214,19 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
                 <Button size="sm" variant="outline" className="flex-1">
                   Buy Now
                 </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={handleWishlist}
+                >
+                  <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                  {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                </Button>
+                {/* Add the 3D viewer beside the buttons */}
+                <Inline3DViewer modelUrl="/claypot.glb" className="ml-2" />
               </div>
+               
             </div>
           </CardContent>
         </Card>
