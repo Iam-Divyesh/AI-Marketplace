@@ -96,27 +96,91 @@ export class FallbackAIService {
 
   // Market analysis fallback
   static generateMarketAnalysis(userType: string, businessType: string, location: string): any {
+    // Generate dynamic analysis based on business type and location
+    const businessTypeLower = (businessType || 'handcrafted goods').toLowerCase();
+    const locationLower = (location || 'local').toLowerCase();
+    
+    // Customize analysis based on business type
+    let specificInsights = {
+      trendingKeywords: ["sustainable", "handmade", "eco-friendly", "local artisan", "unique design", "custom", "traditional craft"],
+      competitorGaps: ["Limited online presence", "Inconsistent quality", "Poor customer service", "Weak brand storytelling"],
+      opportunities: ["Custom orders", "Subscription boxes", "Workshop experiences", "Corporate gifting", "Seasonal collections"],
+      marketSize: "₹2.5M",
+      growthRate: "12.5%",
+      avgPrice: "₹1,950"
+    };
+
+    if (businessTypeLower.includes('pottery') || businessTypeLower.includes('ceramic')) {
+      specificInsights = {
+        trendingKeywords: ["hand-thrown pottery", "ceramic art", "functional ceramics", "sustainable clay", "artisan pottery", "custom glazes"],
+        competitorGaps: ["Limited variety in glazes", "Poor packaging for shipping", "Inconsistent sizing", "Weak online presence"],
+        opportunities: ["Custom dinnerware sets", "Pottery workshops", "Corporate gifts", "Restaurant partnerships", "Seasonal collections"],
+        marketSize: "₹3.2M",
+        growthRate: "15.3%",
+        avgPrice: "₹2,200"
+      };
+    } else if (businessTypeLower.includes('jewelry') || businessTypeLower.includes('jewellery')) {
+      specificInsights = {
+        trendingKeywords: ["handcrafted jewelry", "artisan accessories", "unique designs", "sustainable materials", "custom jewelry", "traditional techniques"],
+        competitorGaps: ["Limited size options", "Poor quality control", "Weak brand identity", "Inconsistent pricing"],
+        opportunities: ["Custom engagement rings", "Bridal collections", "Corporate gifts", "Jewelry workshops", "Subscription boxes"],
+        marketSize: "₹4.1M",
+        growthRate: "18.7%",
+        avgPrice: "₹3,500"
+      };
+    } else if (businessTypeLower.includes('textile') || businessTypeLower.includes('fabric')) {
+      specificInsights = {
+        trendingKeywords: ["handwoven textiles", "artisan fabrics", "sustainable materials", "traditional weaving", "custom textiles", "cultural heritage"],
+        competitorGaps: ["Limited color options", "Poor quality control", "Weak online presence", "Inconsistent sizing"],
+        opportunities: ["Custom upholstery", "Fashion collaborations", "Home decor partnerships", "Textile workshops", "Cultural tourism"],
+        marketSize: "₹2.8M",
+        growthRate: "14.2%",
+        avgPrice: "₹1,800"
+      };
+    } else if (businessTypeLower.includes('wood') || businessTypeLower.includes('woodwork')) {
+      specificInsights = {
+        trendingKeywords: ["handcrafted woodwork", "artisan furniture", "sustainable wood", "traditional carving", "custom furniture", "wooden crafts"],
+        competitorGaps: ["Limited customization", "Poor finishing", "Weak online presence", "Inconsistent quality"],
+        opportunities: ["Custom furniture", "Corporate gifts", "Woodworking workshops", "Restaurant partnerships", "Home decor"],
+        marketSize: "₹3.5M",
+        growthRate: "16.8%",
+        avgPrice: "₹4,200"
+      };
+    }
+
+    // Customize based on location
+    let locationInsights = "";
+    if (locationLower.includes('delhi') || locationLower.includes('mumbai') || locationLower.includes('bangalore')) {
+      locationInsights = "Metropolitan areas show high demand for unique, handcrafted items with strong purchasing power and appreciation for artisan work.";
+    } else if (locationLower.includes('india')) {
+      locationInsights = "The Indian market is experiencing a renaissance in traditional crafts with growing appreciation for authentic, locally-made products.";
+    } else {
+      locationInsights = "Local markets are showing increasing interest in sustainable, handcrafted alternatives to mass-produced goods.";
+    }
+
     return {
-      summary: `Based on current market trends, your ${businessType || 'handcrafted goods'} business shows strong potential in the sustainable and eco-friendly market segment. The ${location || 'local'} market is growing at 12.5% annually with increasing demand for unique, locally-made products.`,
+      summary: `Based on current market trends, your ${businessType || 'handcrafted goods'} business shows strong potential in the sustainable and eco-friendly market segment. The ${location || 'local'} market is growing at ${specificInsights.growthRate} annually with increasing demand for unique, locally-made products. ${locationInsights}`,
       recommendations: [
         "Focus on sustainability messaging to capture the growing eco-conscious market",
         "Consider expanding into digital marketplaces to reach a broader audience",
         "Implement dynamic pricing strategies based on seasonal demand patterns",
         "Develop a strong social media presence to engage with younger demographics",
-        "Create limited edition collections to drive urgency and exclusivity"
+        "Create limited edition collections to drive urgency and exclusivity",
+        "Partner with local businesses and restaurants for B2B opportunities",
+        "Offer workshops and experiences to build community and brand loyalty"
       ],
       marketInsights: {
-        trendingKeywords: ["sustainable", "handmade", "eco-friendly", "local artisan", "unique design", "custom", "traditional craft"],
-        competitorGaps: ["Limited online presence", "Inconsistent quality", "Poor customer service", "Weak brand storytelling"],
-        opportunities: ["Custom orders", "Subscription boxes", "Workshop experiences", "Corporate gifting", "Seasonal collections"]
+        trendingKeywords: specificInsights.trendingKeywords,
+        competitorGaps: specificInsights.competitorGaps,
+        opportunities: specificInsights.opportunities
       },
       marketData: {
-        localMarketSize: "₹2.5M",
+        localMarketSize: specificInsights.marketSize,
         globalMarketSize: "₹125M",
-        competitorCount: 45,
-        averagePrice: "₹1,950",
-        growthRate: "12.5%",
-        trends: ["Sustainable materials", "Custom designs", "Local sourcing", "Digital integration"]
+        competitorCount: Math.floor(Math.random() * 30) + 25, // Random between 25-55
+        averagePrice: specificInsights.avgPrice,
+        growthRate: specificInsights.growthRate,
+        trends: ["Sustainable materials", "Custom designs", "Local sourcing", "Digital integration", "Experience-based selling"]
       }
     };
   }

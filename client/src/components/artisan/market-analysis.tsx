@@ -21,6 +21,7 @@ import {
   Brain
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 const marketData = {
   localMarket: {
@@ -105,6 +106,7 @@ const recommendations = [
 
 export function MarketAnalysis() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedProduct, setSelectedProduct] = useState('all');
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<any>(null);
@@ -132,6 +134,14 @@ export function MarketAnalysis() {
   const generateAIAnalysis = async () => {
     setIsGenerating(true);
     try {
+      console.log('Generating market analysis...', {
+        userType: 'artisan',
+        businessType: user?.businessType || 'handcrafted goods',
+        location: user?.location || 'India',
+        products: selectedProduct,
+        userId: user?.id
+      });
+
       const response = await fetch('/api/ai/market-analysis', {
         method: 'POST',
         headers: {
@@ -146,9 +156,16 @@ export function MarketAnalysis() {
         })
       });
       
+      console.log('Market analysis response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Market analysis data received:', data);
         setAiAnalysis(data);
+        toast({
+          title: "Market Analysis Generated",
+          description: "AI-powered market insights have been generated successfully!",
+        });
       } else {
         const errorData = await response.json();
         console.error('Market analysis API error:', errorData);
@@ -277,6 +294,12 @@ export function MarketAnalysis() {
             <CardTitle className="flex items-center">
               <Brain className="w-5 h-5 mr-2 text-primary" />
               AI Market Summary
+              {isGenerating && (
+                <Badge variant="secondary" className="ml-2">
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Generating...
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -384,20 +407,33 @@ export function MarketAnalysis() {
                 <CardTitle className="flex items-center">
                   <MapPin className="w-5 h-5 mr-2 text-blue-500" />
                   Local Market
+                  {isGenerating && (
+                    <Loader2 className="w-4 h-4 ml-2 animate-spin text-blue-500" />
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Market Size</p>
-                    <p className="text-2xl font-bold">{marketData.localMarket.size}</p>
+                    <p className="text-2xl font-bold">
+                      {isGenerating ? (
+                        <div className="h-8 bg-muted animate-pulse rounded" />
+                      ) : (
+                        aiAnalysis?.marketData?.localMarketSize || marketData.localMarket.size
+                      )}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Growth Rate</p>
                     <div className="flex items-center">
                       <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                       <span className="text-2xl font-bold text-green-500">
-                        +{marketData.localMarket.growth}%
+                        {isGenerating ? (
+                          <div className="h-8 bg-muted animate-pulse rounded w-16" />
+                        ) : (
+                          `+${aiAnalysis?.marketData?.growthRate || marketData.localMarket.growth}%`
+                        )}
                       </span>
                     </div>
                   </div>
@@ -406,20 +442,38 @@ export function MarketAnalysis() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Competitors</p>
-                    <p className="text-xl font-semibold">{marketData.localMarket.competition}</p>
+                    <p className="text-xl font-semibold">
+                      {isGenerating ? (
+                        <div className="h-6 bg-muted animate-pulse rounded w-12" />
+                      ) : (
+                        aiAnalysis?.marketData?.competitorCount || marketData.localMarket.competition
+                      )}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Avg Price</p>
-                    <p className="text-xl font-semibold">₹{marketData.localMarket.avgPrice}</p>
+                    <p className="text-xl font-semibold">
+                      {isGenerating ? (
+                        <div className="h-6 bg-muted animate-pulse rounded w-16" />
+                      ) : (
+                        `₹${aiAnalysis?.marketData?.averagePrice || marketData.localMarket.avgPrice}`
+                      )}
+                    </p>
                   </div>
                 </div>
 
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Trending Topics</p>
                   <div className="flex flex-wrap gap-2">
-                    {marketData.localMarket.trends.map((trend, index) => (
-                      <Badge key={index} variant="secondary">{trend}</Badge>
-                    ))}
+                    {isGenerating ? (
+                      Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="h-6 bg-muted animate-pulse rounded w-20" />
+                      ))
+                    ) : (
+                      (aiAnalysis?.marketData?.trends || marketData.localMarket.trends).map((trend, index) => (
+                        <Badge key={index} variant="secondary">{trend}</Badge>
+                      ))
+                    )}
                   </div>
                 </div>
               </CardContent>
