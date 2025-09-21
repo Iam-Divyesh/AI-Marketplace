@@ -6,6 +6,9 @@ import { Heart, ShoppingCart, Eye, Star } from "lucide-react";
 import { useState } from "react";
 import { ModelViewer } from "./3d-model-viewer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useCart } from "@/contexts/cart-context";
+import { useWishlist } from "@/contexts/wishlist-context";
+import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
 
 interface ProductCardProps {
@@ -14,19 +17,57 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [isInCart, setIsInCart] = useState(false);
   const [show3DViewer, setShow3DViewer] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const { addToCart, items } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { toast } = useToast();
+  
+  const isInCart = items.some(item => item.id === product.id);
+  const isWishlisted = isInWishlist(product.id);
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsLiked(!isLiked);
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "Removed from wishlist",
+        description: `${product.name} has been removed from your wishlist.`,
+      });
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        artisan: product.artisanName,
+        price: parseFloat(product.price),
+        image: Array.isArray(product.images) ? product.images[0] : product.images,
+        category: product.category,
+        location: product.location,
+        model3d: product.model3d,
+        isFeatured: product.isFeatured,
+        views: product.views,
+        likes: product.likes
+      });
+      toast({
+        title: "Added to wishlist",
+        description: `${product.name} has been added to your wishlist.`,
+      });
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsInCart(!isInCart);
-    // TODO: Implement add to cart functionality
+    addToCart({
+      id: product.id,
+      name: product.name,
+      artisan: product.artisanName,
+      price: parseFloat(product.price),
+      image: Array.isArray(product.images) ? product.images[0] : product.images
+    });
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+    });
   };
 
   const handleView3D = (e: React.MouseEvent) => {
@@ -47,7 +88,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         className="transform-gpu"
         data-testid={`card-product-${product.id}`}
       >
-        <Card className="product-card glass-effect hover:neon-border group cursor-pointer">
+        <Card className="product-card glass-effect hover:neon-border group cursor-pointer" onClick={() => setShowProductModal(true)}>
           <CardContent className="p-6">
             <div className="relative overflow-hidden rounded-lg mb-4">
               <img
@@ -64,9 +105,9 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
                   size="sm"
                   variant="secondary"
                   className="h-8 w-8 p-0 rounded-full"
-                  onClick={handleLike}
+                  onClick={handleWishlist}
                 >
-                  <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                  <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                 </Button>
                 
                 {product.model3d && (
@@ -177,6 +218,88 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Product Detail Modal */}
+      <Dialog open={showProductModal} onOpenChange={setShowProductModal}>
+        <DialogContent className="max-w-4xl h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{product.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <img
+                src={mainImage}
+                alt={product.name}
+                className="w-full h-64 object-cover rounded-lg"
+              />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-primary">₹{parseFloat(product.price).toLocaleString()}</p>
+                  {product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price) && (
+                    <p className="text-sm text-muted-foreground line-through">
+                      ₹{parseFloat(product.originalPrice).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span>4.5 (24 reviews)</span>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Description</h3>
+                <p className="text-muted-foreground">{product.description}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Artisan</h3>
+                <p className="text-muted-foreground">{product.artisanName} • {product.location}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Category</h3>
+                <p className="text-muted-foreground">{product.category}</p>
+              </div>
+              {product.materials && product.materials.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Materials</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {product.materials.map((material, index) => (
+                      <Badge key={index} variant="secondary">{material}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex space-x-2 pt-4">
+                <Button
+                  className="flex-1"
+                  onClick={handleAddToCart}
+                  disabled={isInCart}
+                >
+                  {isInCart ? (
+                    <>
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      In Cart
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Add to Cart
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleWishlist}
+                >
+                  <Heart className={`h-4 w-4 mr-2 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                  {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 3D Model Viewer Dialog */}
       <Dialog open={show3DViewer} onOpenChange={setShow3DViewer}>

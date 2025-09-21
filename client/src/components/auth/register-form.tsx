@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
@@ -43,6 +44,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const {
     register,
@@ -72,9 +74,12 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       const result = await response.json();
 
       if (result.success) {
+        // Update AuthContext
+        login(result.data.user, result.data.token);
+        
         toast({
           title: 'Registration Successful',
-          description: 'You can now login with your credentials.',
+          description: 'Welcome to the marketplace!',
         });
 
         onSuccess?.(result.data);

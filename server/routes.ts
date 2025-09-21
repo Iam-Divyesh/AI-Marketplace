@@ -3,10 +3,14 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProductSchema, productQuerySchema, aiQuerySchema } from "@shared/schema";
 import { getProductRecommendations, generateChatResponse } from "./services/openai";
+import { GeminiService } from "./services/gemini";
 import authRoutes from "./routes/auth";
 import { authenticateToken, requireArtisan, requireCustomer } from "./middleware/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize services
+  const geminiService = new GeminiService();
+  
   // Authentication routes
   app.use('/api/auth', authRoutes);
 
@@ -115,14 +119,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const allProducts = await storage.getProducts();
-      const aiResponse = await generateChatResponse(
-        query,
-        allProducts,
-        chatSession.messages || []
-      );
+      
+      // Use Gemini for chat responses
+      const aiResponse = await geminiService.generateChatResponse(query, {
+        userType: 'customer',
+        previousMessages: Array.isArray(chatSession.messages) ? chatSession.messages : [],
+        availableProducts: allProducts
+      });
 
       // Update chat history
-      const updatedMessages = [...(chatSession.messages || []), query, aiResponse];
+      const updatedMessages = [...(Array.isArray(chatSession.messages) ? chatSession.messages : []), query, aiResponse];
       await storage.updateChatSession(chatSession.id, updatedMessages);
 
       res.json({ 
@@ -131,6 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
+      console.error('Chat error:', error);
       res.status(400).json({ 
         error: "Chat request failed",
         message: error instanceof Error ? error.message : "Unknown error"

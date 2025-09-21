@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Product, MarketAnalysisData } from '../../shared/schema';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'your-gemini-api-key');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'AIzaSyDju2iC27zjujf_yZSfdmizZMff1is4tb8');
 
 export class GeminiService {
-  private model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  private model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   // Market analysis for products
   async analyzeMarket(data: MarketAnalysisData): Promise<{
@@ -187,7 +187,7 @@ export class GeminiService {
         : 'You are helping a customer find products and answer questions.';
 
       const productContext = context.availableProducts?.length 
-        ? `Available products: ${context.availableProducts.map(p => `${p.name} - $${p.price}`).join(', ')}`
+        ? `Available products: ${context.availableProducts.map(p => `${p.name} - ₹${p.price} - ${p.category} - by ${p.artisanName} - ${p.location}`).join(', ')}`
         : '';
 
       const prompt = `
@@ -199,8 +199,22 @@ export class GeminiService {
         
         Previous conversation: ${context.previousMessages?.join('\n') || 'None'}
         
-        Provide a helpful, friendly response. If you're helping a customer, suggest relevant products. If you're helping an artisan, provide business advice.
-        Keep responses concise but informative.
+        You are an AI shopping assistant for an artisan marketplace. Your main job is to help customers find products they'll love.
+        
+        When helping customers:
+        1. Suggest specific products from the available list that match their needs
+        2. Mention product names, prices in ₹, categories, and artisan names
+        3. Ask follow-up questions to better understand their preferences
+        4. Provide helpful information about artisan products and craftsmanship
+        5. Be enthusiastic about handcrafted items and their unique qualities
+        
+        When helping artisans:
+        1. Provide business advice for selling on the marketplace
+        2. Suggest pricing strategies and marketing tips
+        3. Help with product descriptions and SEO
+        4. Offer insights about customer preferences and trends
+        
+        Keep responses conversational, helpful, and under 200 words. Always be encouraging about artisan craftsmanship.
       `;
 
       const result = await this.model.generateContent(prompt);

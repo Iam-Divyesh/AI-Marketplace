@@ -6,11 +6,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LanguageSelector } from "@/components/multilingual/language-selector";
 import { useAuth } from "@/contexts/auth-context";
+import { useCart } from "@/contexts/cart-context";
 
 export default function Navigation() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { totalItems } = useCart();
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -51,8 +53,13 @@ export default function Navigation() {
                 <div className="flex items-center space-x-4">
                   <LanguageSelector />
                   <Link href="/cart">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="relative">
                       <ShoppingCart className="h-5 w-5" />
+                      {totalItems > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {totalItems}
+                        </span>
+                      )}
                     </Button>
                   </Link>
                   <DropdownMenu>

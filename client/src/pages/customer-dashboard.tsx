@@ -23,11 +23,15 @@ import {
   Gift
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { useCart } from '@/contexts/cart-context';
+import { useWishlist } from '@/contexts/wishlist-context';
 import ProductCard from '@/components/product-card';
 import { ModelViewer } from '@/components/3d-model-viewer';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
+  const { items: cartItems, totalItems: cartTotalItems } = useCart();
+  const { items: wishlistItems } = useWishlist();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -62,43 +66,9 @@ export default function CustomerDashboard() {
     }
   ];
 
-  const wishlist = [
-    {
-      id: '1',
-      name: 'Handwoven Textile Art',
-      artisan: 'Anita Kumar',
-      price: 1800,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
-      model3d: null
-    },
-    {
-      id: '2',
-      name: 'Glass Ornament Set',
-      artisan: 'Vikram Mehta',
-      price: 2200,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
-      model3d: 'claypot.glb'
-    }
-  ];
+  // Wishlist items are now managed by the wishlist context
 
-  const cartItems = [
-    {
-      id: '1',
-      name: 'Handcrafted Pottery Bowl',
-      artisan: 'Maya Sharma',
-      price: 2500,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop'
-    },
-    {
-      id: '2',
-      name: 'Wooden Sculpture',
-      artisan: 'Raj Patel',
-      price: 4500,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop'
-    }
-  ];
+  // Cart items are now managed by the cart context
 
   const recommendedProducts = [
     {
@@ -198,7 +168,7 @@ export default function CustomerDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Wishlist Items</p>
-                  <p className="text-2xl font-bold">{wishlist.length}</p>
+                  <p className="text-2xl font-bold">{wishlistItems.length}</p>
                 </div>
                 <Heart className="h-8 w-8 text-red-500" />
               </div>
@@ -210,7 +180,7 @@ export default function CustomerDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Cart Items</p>
-                  <p className="text-2xl font-bold">{cartItems.length}</p>
+                  <p className="text-2xl font-bold">{cartTotalItems}</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-green-500" />
               </div>
@@ -286,7 +256,7 @@ export default function CustomerDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {wishlist.slice(0, 2).map((item) => (
+                    {wishlistItems.slice(0, 2).map((item) => (
                       <div key={item.id} className="flex items-center space-x-4 p-3 border rounded-lg">
                         <img
                           src={item.image}
@@ -419,98 +389,118 @@ export default function CustomerDashboard() {
 
           {/* Wishlist Tab */}
           <TabsContent value="wishlist" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Wishlist</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {wishlist.map((item) => (
-                    <div key={item.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                      <div className="relative mb-3">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                        {item.model3d && (
-                          <Badge className="absolute top-2 left-2 bg-blue-500/20 text-blue-500 border-blue-500/30">
-                            3D View
-                          </Badge>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full"
-                        >
-                          <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-                        </Button>
+            {wishlistItems.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Your wishlist is empty</h3>
+                  <p className="text-muted-foreground mb-4">Add some products to your wishlist to see them here</p>
+                  <Button onClick={() => setActiveTab('overview')}>
+                    Browse Products
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Wishlist ({wishlistItems.length} items)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {wishlistItems.map((item) => (
+                      <div key={item.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div className="relative mb-3">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                          {item.model3d && (
+                            <Badge className="absolute top-2 left-2 bg-blue-500/20 text-blue-500 border-blue-500/30">
+                              3D View
+                            </Badge>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full"
+                          >
+                            <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                          </Button>
+                        </div>
+                        <h4 className="font-medium mb-1">{item.name}</h4>
+                        <p className="text-sm text-muted-foreground mb-2">by {item.artisan}</p>
+                        <p className="font-bold mb-3">₹{item.price.toLocaleString()}</p>
+                        <div className="flex space-x-2">
+                          <Button size="sm" className="flex-1">
+                            Add to Cart
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <h4 className="font-medium mb-1">{item.name}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">by {item.artisan}</p>
-                      <p className="font-bold mb-3">₹{item.price.toLocaleString()}</p>
-                      <div className="flex space-x-2">
-                        <Button size="sm" className="flex-1">
-                          Add to Cart
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Cart Tab */}
           <TabsContent value="cart" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Shopping Cart</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-medium">{item.name}</h4>
-                        <p className="text-sm text-muted-foreground">by {item.artisan}</p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="outline">-</Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button size="sm" variant="outline">+</Button>
+            {cartItems.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Your cart is empty</h3>
+                  <p className="text-muted-foreground mb-4">Add some products to get started</p>
+                  <Button onClick={() => setActiveTab('overview')}>
+                    Browse Products
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Shopping Cart ({cartTotalItems} items)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {cartItems.map((item) => (
+                      <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-medium">{item.name}</h4>
+                          <p className="text-sm text-muted-foreground">by {item.artisan}</p>
                         </div>
-                        <p className="font-bold w-20 text-right">₹{item.price.toLocaleString()}</p>
-                        <Button size="sm" variant="ghost" className="text-red-500">
-                          Remove
-                        </Button>
+                        <div className="flex items-center space-x-4">
+                          <p className="font-bold w-20 text-right">
+                            ₹{(item.price * item.quantity).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 pt-4 border-t">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-lg font-bold">
-                        Total: ₹{cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}
-                      </p>
-                    </div>
-                    <Button size="lg" className="px-8">
-                      Proceed to Checkout
-                    </Button>
+                    ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="mt-6 pt-4 border-t">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-lg font-bold">
+                          Total: ₹{cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}
+                        </p>
+                      </div>
+                      <Button size="lg" className="px-8">
+                        Proceed to Checkout
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Profile Tab */}
@@ -595,3 +585,5 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+
+

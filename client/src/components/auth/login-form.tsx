@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -28,6 +29,7 @@ export function LoginForm({ onSuccess, onSwitchToRegister, onSwitchToForgotPassw
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const {
     register,
@@ -53,9 +55,8 @@ export function LoginForm({ onSuccess, onSwitchToRegister, onSwitchToForgotPassw
       const result = await response.json();
 
       if (result.success) {
-        // Store token in localStorage
-        localStorage.setItem('token', result.data.token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        // Update AuthContext
+        login(result.data.user, result.data.token);
         
         toast({
           title: 'Login Successful',

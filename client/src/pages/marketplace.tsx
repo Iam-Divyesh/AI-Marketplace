@@ -69,7 +69,32 @@ export default function Marketplace() {
     { label: "All Prices", min: undefined, max: undefined },
     { label: "Under ₹500", min: undefined, max: 500 },
     { label: "₹500 - ₹2000", min: 500, max: 2000 },
-    { label: "Above ₹2000", min: 2000, max: undefined },
+    { label: "₹2000 - ₹5000", min: 2000, max: 5000 },
+    { label: "₹5000 - ₹10000", min: 5000, max: 10000 },
+    { label: "Above ₹10000", min: 10000, max: undefined },
+  ];
+
+  const sortOptions = [
+    { label: "Newest First", value: "createdAt", order: "desc" },
+    { label: "Oldest First", value: "createdAt", order: "asc" },
+    { label: "Price: Low to High", value: "price", order: "asc" },
+    { label: "Price: High to Low", value: "price", order: "desc" },
+    { label: "Most Popular", value: "views", order: "desc" },
+    { label: "Most Liked", value: "likes", order: "desc" },
+  ];
+
+  const materials = [
+    "All Materials",
+    "Clay",
+    "Wood",
+    "Metal",
+    "Glass",
+    "Fabric",
+    "Leather",
+    "Stone",
+    "Ceramic",
+    "Bamboo",
+    "Paper"
   ];
 
   return (
@@ -196,6 +221,58 @@ export default function Marketplace() {
                           data-testid={`option-price-${range.label.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                           {range.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="min-w-[150px]">
+                  <label className="block text-sm font-medium mb-2">Materials</label>
+                  <Select
+                    value={filters.materials?.[0] || "all"}
+                    onValueChange={(value) => 
+                      handleFilterChange("materials", value === "all" ? undefined : [value])
+                    }
+                  >
+                    <SelectTrigger data-testid="select-materials">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {materials.map((material) => (
+                        <SelectItem 
+                          key={material} 
+                          value={material === "All Materials" ? "all" : material}
+                          data-testid={`option-material-${material.toLowerCase().replace(/\s+/g, "-")}`}
+                        >
+                          {material}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="min-w-[150px]">
+                  <label className="block text-sm font-medium mb-2">Sort By</label>
+                  <Select
+                    value={`${filters.sortBy || "createdAt"}-${filters.sortOrder || "desc"}`}
+                    onValueChange={(value) => {
+                      const [sortBy, sortOrder] = value.split("-");
+                      handleFilterChange("sortBy", sortBy as any);
+                      handleFilterChange("sortOrder", sortOrder as any);
+                    }}
+                  >
+                    <SelectTrigger data-testid="select-sort">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((option) => (
+                        <SelectItem 
+                          key={option.label} 
+                          value={`${option.value}-${option.order}`}
+                          data-testid={`option-sort-${option.label.toLowerCase().replace(/\s+/g, "-")}`}
+                        >
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
