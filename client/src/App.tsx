@@ -13,8 +13,13 @@ import AIChatWidget from "./components/ai-chat-widget";
 import Home from "./pages/home";
 import Marketplace from "./pages/marketplace";
 import Dashboard from "./pages/dashboard";
+import CustomerDashboard from "./pages/customer-dashboard";
+import ArtisanDashboard from "./pages/artisan-dashboard";
 import AuthPage from "./pages/auth";
 import CartPage from "./pages/cart";
+import CheckoutPage from "./pages/checkout";
+import ProfilePage from "./pages/profile";
+import SettingsPage from "./pages/settings";
 import NotFound from "./pages/not-found";
 
 function Router() {
@@ -23,7 +28,12 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/marketplace" component={Marketplace} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/customer-dashboard" component={CustomerDashboard} />
+      <Route path="/artisan-dashboard" component={ArtisanDashboard} />
       <Route path="/cart" component={CartPage} />
+      <Route path="/checkout" component={CheckoutPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/settings" component={SettingsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

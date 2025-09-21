@@ -63,6 +63,26 @@ export const api = {
     return response.json();
   },
 
+  // Orders
+  async getOrders(filters?: { user?: string; artisan?: string; limit?: number }): Promise<{ orders: any[] }> {
+    const params = new URLSearchParams();
+    if (filters?.user) params.append("user", filters.user);
+    if (filters?.artisan) params.append("artisan", filters.artisan);
+    if (filters?.limit) params.append("limit", filters.limit.toString());
+
+    const response = await apiRequest("GET", `/api/orders?${params.toString()}`);
+    return response.json();
+  },
+
+  // Artisan Stats
+  async getArtisanStats(filters?: { artisan?: string }): Promise<any> {
+    const params = new URLSearchParams();
+    if (filters?.artisan) params.append("artisan", filters.artisan);
+
+    const response = await apiRequest("GET", `/api/artisan/stats?${params.toString()}`);
+    return response.json();
+  },
+
   // Health Check
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     const response = await apiRequest("GET", "/api/health");

@@ -101,11 +101,11 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               
               {/* Action buttons overlay */}
-              <div className="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="h-8 w-8 p-0 rounded-full"
+                  className="h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white shadow-md"
                   onClick={handleWishlist}
                 >
                   <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
@@ -115,7 +115,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-8 w-8 p-0 rounded-full"
+                    className="h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white shadow-md"
                     onClick={handleView3D}
                   >
                     <Eye className="h-4 w-4" />
@@ -201,30 +201,34 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
               </div>
 
               {/* Action buttons */}
-              <div className="flex space-x-2 pt-2 items-center">
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  onClick={handleAddToCart}
-                  variant={isInCart ? "secondary" : "default"}
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  {isInCart ? 'In Cart' : 'Add to Cart'}
-                </Button>
-                <Button size="sm" variant="outline" className="flex-1">
-                  Buy Now
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={handleWishlist}
-                >
-                  <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
-                  {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                </Button>
-                {/* Add the 3D viewer beside the buttons */}
-                <Inline3DViewer modelUrl="/claypot.glb" className="ml-2" />
+              <div className="flex flex-col space-y-2 pt-2">
+                <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleAddToCart}
+                    variant={isInCart ? "secondary" : "default"}
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {isInCart ? 'In Cart' : 'Add to Cart'}
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1">
+                    Buy Now
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 mr-2"
+                    onClick={handleWishlist}
+                  >
+                    <Heart className={`h-4 w-4 mr-2 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                    {isWishlisted ? 'Remove' : 'Wishlist'}
+                  </Button>
+                  {/* Add the 3D viewer beside the buttons */}
+                  <Inline3DViewer modelUrl="/claypot.glb" className="flex-shrink-0" />
+                </div>
               </div>
                
             </div>

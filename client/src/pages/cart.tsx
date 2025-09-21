@@ -200,10 +200,12 @@ export default function CartPage() {
               </CardContent>
             </Card>
 
-            <Button size="lg" className="w-full">
-              <CreditCard className="h-5 w-5 mr-2" />
-              Proceed to Checkout
-            </Button>
+            <Link href="/checkout">
+              <Button size="lg" className="w-full">
+                <CreditCard className="h-5 w-5 mr-2" />
+                Proceed to Checkout
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </div>

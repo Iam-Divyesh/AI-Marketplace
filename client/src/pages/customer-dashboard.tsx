@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useQuery } from '@tanstack/react-query';
 import { 
   ShoppingCart, 
   Heart, 
@@ -27,6 +28,7 @@ import { useCart } from '@/contexts/cart-context';
 import { useWishlist } from '@/contexts/wishlist-context';
 import ProductCard from '@/components/product-card';
 import { ModelViewer } from '@/components/3d-model-viewer';
+import { api } from '@/lib/api';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
@@ -35,69 +37,31 @@ export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock data - in real app, this would come from API
-  const recentOrders = [
-    {
-      id: 'ORD-001',
-      product: 'Handcrafted Pottery Bowl',
-      artisan: 'Maya Sharma',
-      amount: 2500,
-      status: 'delivered',
-      date: '2024-01-15',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'ORD-002',
-      product: 'Wooden Sculpture',
-      artisan: 'Raj Patel',
-      amount: 4500,
-      status: 'shipped',
-      date: '2024-01-14',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'ORD-003',
-      product: 'Ceramic Vase',
-      artisan: 'Priya Singh',
-      amount: 3200,
-      status: 'processing',
-      date: '2024-01-13',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop'
-    }
-  ];
+  // Fetch recent orders from API
+  const { data: recentOrdersData, isLoading: isLoadingOrders } = useQuery({
+    queryKey: ['/api/orders', { user: user?.id, limit: 3 }],
+    queryFn: () => fetch(`/api/orders?user=${user?.id}&limit=3`).then(res => res.json()),
+  });
 
-  // Wishlist items are now managed by the wishlist context
+  const recentOrders = recentOrdersData?.orders || [];
 
-  // Cart items are now managed by the cart context
+  // Fetch recommended products from API
+  const { data: recommendedProductsData, isLoading: isLoadingRecommended } = useQuery({
+    queryKey: ['/api/products', { isFeatured: true, limit: 4 }],
+    queryFn: () => api.getProducts({ page: 1, limit: 4, isFeatured: true }),
+  });
 
-  const recommendedProducts = [
-    {
-      id: '1',
-      name: 'Handwoven Textile Art',
-      artisan: 'Anita Kumar',
-      price: 1800,
-      category: 'Textiles',
-      location: 'Jaipur, India',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
-      model3d: null,
-      isFeatured: true,
-      views: 120,
-      likes: 45
-    },
-    {
-      id: '2',
-      name: 'Glass Ornament Set',
-      artisan: 'Vikram Mehta',
-      price: 2200,
-      category: 'Glass Art',
-      location: 'Mumbai, India',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
-      model3d: 'necklace.glb',
-      isFeatured: false,
-      views: 89,
-      likes: 32
-    }
-  ];
+  const recommendedProducts = recommendedProductsData?.products || [];
+
+  interface Order {
+    id: string;
+    product: string;
+    artisan: string;
+    amount: number;
+    status: string;
+    date: string;
+    image: string;
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -192,7 +156,7 @@ export default function CustomerDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Spent</p>
-                  <p className="text-2xl font-bold">₹{recentOrders.reduce((sum, order) => sum + order.amount, 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold">₹{recentOrders.reduce((sum: number, order: Order) => sum + order.amount, 0).toLocaleString()}</p>
                 </div>
                 <CreditCard className="h-8 w-8 text-purple-500" />
               </div>
@@ -223,7 +187,7 @@ export default function CustomerDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentOrders.slice(0, 3).map((order) => (
+                    {recentOrders.slice(0, 3).map((order: Order) => (
                       <div key={order.id} className="flex items-center space-x-4 p-3 border rounded-lg">
                         <img
                           src={order.image}
@@ -289,46 +253,36 @@ export default function CustomerDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {recommendedProducts.map((product) => (
-                    <div key={product.id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                      <div className="relative">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-32 object-cover rounded-lg mb-3"
-                        />
-                        {product.model3d && (
-                          <Badge className="absolute top-2 left-2 bg-blue-500/20 text-blue-500 border-blue-500/30">
-                            3D View
-                          </Badge>
-                        )}
-                        {product.isFeatured && (
-                          <Badge className="absolute top-2 right-2 bg-yellow-500/20 text-yellow-500 border-yellow-500/30">
-                            Featured
-                          </Badge>
-                        )}
-                      </div>
-                      <h4 className="font-medium mb-1">{product.name}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">by {product.artisan}</p>
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="font-bold">₹{product.price.toLocaleString()}</p>
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs">4.5</span>
+                {isLoadingRecommended ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="border rounded-lg p-4 animate-pulse">
+                        <div className="w-full h-32 bg-muted rounded-lg mb-3"></div>
+                        <div className="h-4 bg-muted rounded mb-2"></div>
+                        <div className="h-3 bg-muted rounded mb-2"></div>
+                        <div className="h-6 bg-muted rounded mb-3"></div>
+                        <div className="flex space-x-2">
+                          <div className="h-8 bg-muted rounded flex-1"></div>
+                          <div className="h-8 w-8 bg-muted rounded"></div>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button size="sm" className="flex-1">
-                          Add to Cart
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Heart className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : recommendedProducts.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {recommendedProducts.map((product, index) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No recommended products available</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -341,7 +295,7 @@ export default function CustomerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentOrders.map((order) => (
+                  {recentOrders.map((order: Order) => (
                     <div key={order.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-4">

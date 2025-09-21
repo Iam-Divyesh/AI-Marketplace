@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertProductSchema, productQuerySchema, aiQuerySchema } from "@shared/schema";
 import { getProductRecommendations, generateChatResponse } from "./services/openai";
 import { GeminiService } from "./services/gemini";
+import { FallbackAIService } from "./services/fallback-ai";
 import authRoutes from "./routes/auth";
 import { authenticateToken, requireArtisan, requireCustomer } from "./middleware/auth";
 
@@ -49,10 +50,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/products", async (req, res) => {
     try {
+      // Parse and validate the product data
       const productData = insertProductSchema.parse(req.body);
+      
+      // Ensure required fields are present
+      if (!productData.artisanId) {
+        return res.status(400).json({ 
+          error: "Artisan ID is required",
+          message: "Please ensure you are logged in as an artisan"
+        });
+      }
+
       const product = await storage.createProduct(productData);
       res.status(201).json({ product, message: "Product created successfully" });
     } catch (error) {
+      console.error('Product creation error:', error);
       res.status(400).json({ 
         error: "Invalid product data",
         message: error instanceof Error ? error.message : "Unknown error"
@@ -94,7 +106,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { query } = aiQuerySchema.parse(req.body);
       const allProducts = await storage.getProducts();
       
-      const recommendations = await getProductRecommendations(query, allProducts);
+      let recommendations;
+      try {
+        recommendations = await getProductRecommendations(query, allProducts);
+      } catch (aiError) {
+        console.log('Using fallback AI for recommendations');
+        recommendations = FallbackAIService.getProductRecommendations(query, allProducts);
+      }
+      
       res.json(recommendations);
     } catch (error) {
       res.status(400).json({ 
@@ -120,12 +139,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const allProducts = await storage.getProducts();
       
-      // Use Gemini for chat responses
-      const aiResponse = await geminiService.generateChatResponse(query, {
-        userType: 'customer',
-        previousMessages: Array.isArray(chatSession.messages) ? chatSession.messages : [],
-        availableProducts: allProducts
-      });
+      let aiResponse;
+      try {
+        // Use Gemini for chat responses
+        aiResponse = await geminiService.generateChatResponse(query, {
+          userType: 'customer',
+          previousMessages: Array.isArray(chatSession.messages) ? chatSession.messages : [],
+          availableProducts: allProducts
+        });
+      } catch (aiError) {
+        console.log('Using fallback AI for chat');
+        aiResponse = FallbackAIService.generateChatResponse(query, allProducts);
+      }
 
       // Update chat history
       const updatedMessages = [...(Array.isArray(chatSession.messages) ? chatSession.messages : []), query, aiResponse];
@@ -142,6 +167,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Chat request failed",
         message: error instanceof Error ? error.message : "Unknown error"
       });
+    }
+  });
+
+  // Market analysis routes
+  app.post("/api/ai/market-analysis", async (req, res) => {
+    try {
+      const { userType, businessType, location, products, userId } = req.body;
+      
+      // Get user's products for analysis
+      const userProducts = userId ? await storage.getProductsByArtisan(userId) : await storage.getProducts();
+      
+      // Use fallback AI service for market analysis
+      const analysis = FallbackAIService.generateMarketAnalysis(userType, businessType, location);
+
+      res.json(analysis);
+    } catch (error) {
+      console.error('Market analysis error:', error);
+      res.status(500).json({ 
+        error: "Market analysis failed",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Custom analysis route
+  app.post("/api/ai/custom-analysis", async (req, res) => {
+    try {
+      const { query, context } = req.body;
+      
+      if (!query || !query.trim()) {
+        return res.status(400).json({ error: "Query is required" });
+      }
+
+      // Get products for context
+      const allProducts = await storage.getProducts();
+      
+      // Use fallback AI service for custom analysis
+      const response = FallbackAIService.generateChatResponse(query, allProducts);
+
+      res.json({ 
+        analysis: response,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Custom analysis error:', error);
+      res.status(500).json({ 
+        error: "Custom analysis failed",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Orders routes
+  app.get("/api/orders", async (req, res) => {
+    try {
+      // For now, return empty array - orders will be implemented later
+      res.json({ orders: [] });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
+  // Artisan stats routes
+  app.get("/api/artisan/stats", async (req, res) => {
+    try {
+      const artisanId = req.query.artisan as string;
+      if (!artisanId) {
+        return res.status(400).json({ error: "Artisan ID is required" });
+      }
+
+      const products = await storage.getProductsByArtisan(artisanId);
+      const totalProducts = products.length;
+      const totalSales = products.reduce((sum, p) => sum + (p.sales || 0), 0);
+      const totalRevenue = products.reduce((sum, p) => sum + (p.sales || 0) * parseFloat(p.price), 0);
+      const totalViews = products.reduce((sum, p) => sum + (p.views || 0), 0);
+      const avgRating = products.length > 0 
+        ? products.reduce((sum, p) => sum + parseFloat(p.rating || '0'), 0) / products.length 
+        : 0;
+
+      const stats = {
+        totalProducts,
+        totalSales,
+        totalRevenue,
+        totalViews,
+        avgRating,
+        pendingOrders: 0, // Will be implemented with orders
+        thisMonthRevenue: totalRevenue, // Simplified for now
+        thisMonthSales: totalSales
+      };
+
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch artisan stats" });
     }
   });
 

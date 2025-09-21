@@ -53,9 +53,21 @@ export default function AIChatWidget() {
       setMessages(prev => [...prev, aiMessage]);
     },
     onError: (error) => {
+      console.error('Chat error:', error);
+      
+      // Add fallback AI response
+      const fallbackMessage: ChatMessage = {
+        id: Date.now().toString() + "_ai_fallback",
+        content: "I'm having trouble connecting right now, but I'm here to help you discover amazing handcrafted items! Try asking about specific categories like jewelry, pottery, or textiles.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, fallbackMessage]);
+      
       toast({
-        title: "Chat Error",
-        description: error.message || "Failed to send message. Please try again.",
+        title: "Connection Issue",
+        description: "Using offline mode. Some features may be limited.",
         variant: "destructive",
       });
     },

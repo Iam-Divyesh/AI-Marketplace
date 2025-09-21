@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Badge } from '@/components/ui/badge';
 import { Upload, X, Plus, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
 
 const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
@@ -29,6 +30,17 @@ const productSchema = z.object({
   }).optional(),
   location: z.string().min(1, 'Location is required'),
   stock: z.number().min(0, 'Stock must be non-negative'),
+  // Cost tracking fields
+  materialCost: z.string().optional(),
+  laborCost: z.string().optional(),
+  overheadCost: z.string().optional(),
+  totalCost: z.string().optional(),
+  profitMargin: z.string().optional(),
+  // Additional fields
+  isActive: z.boolean().default(true),
+  isFeatured: z.boolean().default(false),
+  processingTime: z.string().optional(),
+  careInstructions: z.string().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -38,6 +50,7 @@ export function ProductForm() {
   const [model3d, setModel3d] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { user, token } = useAuth();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -50,6 +63,15 @@ export function ProductForm() {
       stock: 1,
       materials: [],
       tags: [],
+      materialCost: '',
+      laborCost: '',
+      overheadCost: '',
+      totalCost: '',
+      profitMargin: '',
+      isActive: true,
+      isFeatured: false,
+      processingTime: '',
+      careInstructions: '',
     },
   });
 
@@ -100,15 +122,92 @@ export function ProductForm() {
     }
   };
 
-  const onSubmit = (data: ProductFormData) => {
-    console.log('Product data:', { ...data, images, model3d });
-    toast({
-      title: 'Product created',
-      description: 'Your product has been added successfully',
-    });
-    form.reset();
-    setImages([]);
-    setModel3d('');
+  const onSubmit = async (data: ProductFormData) => {
+    try {
+      // Check if user is logged in
+      if (!user || !user.id) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to add products.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setIsUploading(true);
+      
+      // Calculate total cost and profit margin
+      const materialCost = parseFloat(data.materialCost || '0');
+      const laborCost = parseFloat(data.laborCost || '0');
+      const overheadCost = parseFloat(data.overheadCost || '0');
+      const totalCost = materialCost + laborCost + overheadCost;
+      const price = parseFloat(data.price);
+      const profitMargin = totalCost > 0 ? ((price - totalCost) / price) * 100 : 0;
+
+      const productData = {
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        subcategory: data.subcategory || null,
+        price: price.toString(),
+        originalPrice: data.originalPrice ? parseFloat(data.originalPrice).toString() : null,
+        images: images,
+        model3d: model3d || null,
+        artisanId: user?.id || '',
+        artisanName: user?.artisanName || user?.firstName || 'Unknown Artisan',
+        location: data.location,
+        stock: data.stock,
+        weight: data.weight ? parseFloat(data.weight).toString() : null,
+        dimensions: data.dimensions ? {
+          length: data.dimensions.length ? parseFloat(data.dimensions.length).toString() : null,
+          width: data.dimensions.width ? parseFloat(data.dimensions.width).toString() : null,
+          height: data.dimensions.height ? parseFloat(data.dimensions.height).toString() : null,
+        } : null,
+        materials: data.materials || [],
+        tags: data.tags || [],
+        isFeatured: data.isFeatured,
+        isActive: data.isActive,
+        materialCost: materialCost.toString(),
+        laborCost: laborCost.toString(),
+        overheadCost: overheadCost.toString(),
+        totalCost: totalCost.toString(),
+        profitMargin: profitMargin.toString(),
+        processingTime: data.processingTime || null,
+        careInstructions: data.careInstructions || null,
+      };
+
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: 'Product created',
+          description: 'Your product has been added successfully',
+        });
+        form.reset();
+        setImages([]);
+        setModel3d('');
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create product');
+      }
+    } catch (error) {
+      console.error('Error creating product:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create product. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -321,6 +420,203 @@ export function ProductForm() {
                       />
                     </label>
                   )}
+                </div>
+              </div>
+
+              {/* Cost Tracking Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Cost Tracking</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="materialCost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Material Cost (₹)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="500" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="laborCost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Labor Cost (₹)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="300" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="overheadCost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Overhead Cost (₹)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="100" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="totalCost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Total Cost (₹)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="900" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="profitMargin"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Profit Margin (%)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="50" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="processingTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Processing Time</FormLabel>
+                        <FormControl>
+                          <Input placeholder="3-5 days" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Additional Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Additional Information</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="careInstructions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Care Instructions</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="How to care for this product..."
+                          className="min-h-[80px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="weight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Weight (grams)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="250" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dimensions.length"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Length (cm)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="15" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dimensions.width"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Width (cm)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="10" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex space-x-4">
+                  <FormField
+                    control={form.control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="rounded"
+                          />
+                        </FormControl>
+                        <FormLabel>Active (visible to customers)</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isFeatured"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="rounded"
+                          />
+                        </FormControl>
+                        <FormLabel>Featured Product</FormLabel>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
 

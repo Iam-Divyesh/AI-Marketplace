@@ -34,166 +34,8 @@ export class MemStorage implements IStorage {
   }
 
   private seedData() {
-    // Create sample artisan users
-    const sampleUsers: User[] = [
-      {
-        id: "user1",
-        username: "maya_sharma",
-        password: "hashed_password",
-        email: "maya@example.com",
-        artisanName: "Maya Sharma",
-        location: "Jaipur, India",
-        createdAt: new Date(),
-      },
-      {
-        id: "user2",
-        username: "david_chen",
-        password: "hashed_password",
-        email: "david@example.com",
-        artisanName: "David Chen",
-        location: "San Francisco, USA",
-        createdAt: new Date(),
-      },
-      {
-        id: "user3",
-        username: "priya_patel",
-        password: "hashed_password",
-        email: "priya@example.com",
-        artisanName: "Priya Patel",
-        location: "Mumbai, India",
-        createdAt: new Date(),
-      },
-      {
-        id: "user4",
-        username: "james_wilson",
-        password: "hashed_password",
-        email: "james@example.com",
-        artisanName: "James Wilson",
-        location: "Portland, USA",
-        createdAt: new Date(),
-      },
-      {
-        id: "user5",
-        username: "elena_rodriguez",
-        password: "hashed_password",
-        email: "elena@example.com",
-        artisanName: "Elena Rodriguez",
-        location: "Barcelona, Spain",
-        createdAt: new Date(),
-      }
-    ];
-
-    sampleUsers.forEach(user => this.users.set(user.id, user));
-
-    // Create sample products
-    const sampleProducts: Product[] = [
-      {
-        id: "prod1",
-        name: "Ceramic Blue Vase",
-        description: "Handcrafted ceramic vase with intricate blue and white patterns, perfect for home decoration.",
-        category: "Pottery",
-        price: "1200.00",
-        image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "Maya Sharma",
-        artisanId: "user1",
-        location: "Jaipur, India",
-        status: "active",
-        createdAt: new Date(),
-      },
-      {
-        id: "prod2",
-        name: "Silver Moon Necklace",
-        description: "Elegant silver jewelry with gemstones and intricate details, handcrafted with love.",
-        category: "Jewelry",
-        price: "2800.00",
-        image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "David Chen",
-        artisanId: "user2",
-        location: "San Francisco, USA",
-        status: "active",
-        createdAt: new Date(),
-      },
-      {
-        id: "prod3",
-        name: "Traditional Weave Scarf",
-        description: "Beautiful woven textile with colorful traditional patterns, made from premium materials.",
-        category: "Textiles",
-        price: "850.00",
-        image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "Priya Patel",
-        artisanId: "user3",
-        location: "Mumbai, India",
-        status: "active",
-        createdAt: new Date(),
-      },
-      {
-        id: "prod4",
-        name: "Carved Wood Bird",
-        description: "Wooden sculpture with smooth finish and artistic carved details, a masterpiece of woodcraft.",
-        category: "Woodwork",
-        price: "1500.00",
-        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "James Wilson",
-        artisanId: "user4",
-        location: "Portland, USA",
-        status: "active",
-        createdAt: new Date(),
-      },
-      {
-        id: "prod5",
-        name: "Artisan Ceramic Bowl",
-        description: "Colorful handmade pottery bowl with artistic glazing, perfect for serving or decoration.",
-        category: "Pottery",
-        price: "650.00",
-        image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "Elena Rodriguez",
-        artisanId: "user5",
-        location: "Barcelona, Spain",
-        status: "active",
-        createdAt: new Date(),
-      },
-      {
-        id: "prod6",
-        name: "Macrame Wall Art",
-        description: "Intricate macrame wall hanging with natural fibers, adds bohemian charm to any space.",
-        category: "Textiles",
-        price: "950.00",
-        image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "Priya Patel",
-        artisanId: "user3",
-        location: "Mumbai, India",
-        status: "active",
-        createdAt: new Date(),
-      },
-      {
-        id: "prod7",
-        name: "Leather Craft Wallet",
-        description: "Handcrafted leather goods with detailed stitching, durable and stylish everyday accessory.",
-        category: "Leather",
-        price: "1800.00",
-        image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "James Wilson",
-        artisanId: "user4",
-        location: "Portland, USA",
-        status: "active",
-        createdAt: new Date(),
-      },
-      {
-        id: "prod8",
-        name: "Glass Art Sphere",
-        description: "Beautiful glass art piece with iridescent colors, a stunning centerpiece for any room.",
-        category: "Glass Art",
-        price: "3200.00",
-        image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-        artisanName: "Elena Rodriguez",
-        artisanId: "user5",
-        location: "Barcelona, Spain",
-        status: "active",
-        createdAt: new Date(),
-      }
-    ];
-
-    sampleProducts.forEach(product => this.products.set(product.id, product));
+    // No manual data - all products will be added through the API
+    // This ensures a clean database for artisan product management
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -229,6 +71,12 @@ export class MemStorage implements IStorage {
         );
       }
       
+      if (filters.subcategory) {
+        products = products.filter(p => 
+          p.subcategory?.toLowerCase().includes(filters.subcategory!.toLowerCase())
+        );
+      }
+      
       if (filters.minPrice) {
         products = products.filter(p => parseFloat(p.price) >= filters.minPrice!);
       }
@@ -243,6 +91,44 @@ export class MemStorage implements IStorage {
         );
       }
       
+      if (filters.artisanId) {
+        products = products.filter(p => p.artisanId === filters.artisanId);
+      }
+      
+      if (filters.artisan) {
+        products = products.filter(p => 
+          p.artisanName.toLowerCase().includes(filters.artisan!.toLowerCase())
+        );
+      }
+      
+      if (filters.isFeatured !== undefined) {
+        products = products.filter(p => p.isFeatured === filters.isFeatured);
+      }
+      
+      if (filters.isActive !== undefined) {
+        products = products.filter(p => p.isActive === filters.isActive);
+      }
+      
+      if (filters.materials && filters.materials.length > 0) {
+        products = products.filter(p => 
+          p.materials?.some(material => 
+            filters.materials!.some(filterMaterial => 
+              material.toLowerCase().includes(filterMaterial.toLowerCase())
+            )
+          )
+        );
+      }
+      
+      if (filters.tags && filters.tags.length > 0) {
+        products = products.filter(p => 
+          p.tags?.some(tag => 
+            filters.tags!.some(filterTag => 
+              tag.toLowerCase().includes(filterTag.toLowerCase())
+            )
+          )
+        );
+      }
+      
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
         products = products.filter(p => 
@@ -254,7 +140,56 @@ export class MemStorage implements IStorage {
       }
     }
 
-    return products.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+    // Sort products
+    if (filters?.sortBy) {
+      const sortBy = filters.sortBy;
+      const sortOrder = filters.sortOrder || 'desc';
+      
+      products.sort((a, b) => {
+        let aValue: any, bValue: any;
+        
+        switch (sortBy) {
+          case 'price':
+            aValue = parseFloat(a.price);
+            bValue = parseFloat(b.price);
+            break;
+          case 'createdAt':
+            aValue = new Date(a.createdAt!).getTime();
+            bValue = new Date(b.createdAt!).getTime();
+            break;
+          case 'views':
+            aValue = a.views || 0;
+            bValue = b.views || 0;
+            break;
+          case 'likes':
+            aValue = a.likes || 0;
+            bValue = b.likes || 0;
+            break;
+          case 'sales':
+            aValue = a.sales || 0;
+            bValue = b.sales || 0;
+            break;
+          case 'rating':
+            aValue = parseFloat(a.rating || '0');
+            bValue = parseFloat(b.rating || '0');
+            break;
+          default:
+            aValue = new Date(a.createdAt!).getTime();
+            bValue = new Date(b.createdAt!).getTime();
+        }
+        
+        if (sortOrder === 'asc') {
+          return aValue - bValue;
+        } else {
+          return bValue - aValue;
+        }
+      });
+    } else {
+      // Default sort by creation date (newest first)
+      products.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+    }
+
+    return products;
   }
 
   async getProduct(id: string): Promise<Product | undefined> {
@@ -267,8 +202,29 @@ export class MemStorage implements IStorage {
       ...insertProduct, 
       id,
       artisanId: insertProduct.artisanId || null,
+      artisanName: insertProduct.artisanName || "Unknown Artisan",
+      location: insertProduct.location || "",
       status: "active",
+      isActive: insertProduct.isActive ?? true,
+      isFeatured: insertProduct.isFeatured ?? false,
+      views: 0,
+      likes: 0,
+      sales: 0,
+      rating: "0.00",
+      materialCost: insertProduct.materialCost || "0.00",
+      laborCost: insertProduct.laborCost || "0.00",
+      overheadCost: insertProduct.overheadCost || "0.00",
+      totalCost: insertProduct.totalCost || "0.00",
+      profitMargin: insertProduct.profitMargin || "0.00",
+      stock: insertProduct.stock || 0,
+      weight: insertProduct.weight || null,
+      dimensions: insertProduct.dimensions || null,
+      materials: insertProduct.materials || [],
+      tags: insertProduct.tags || [],
+      processingTime: insertProduct.processingTime || null,
+      careInstructions: insertProduct.careInstructions || null,
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
     this.products.set(id, product);
     return product;
@@ -278,7 +234,11 @@ export class MemStorage implements IStorage {
     const product = this.products.get(id);
     if (!product) return undefined;
     
-    const updatedProduct = { ...product, ...updates };
+    const updatedProduct = { 
+      ...product, 
+      ...updates, 
+      updatedAt: new Date() 
+    };
     this.products.set(id, updatedProduct);
     return updatedProduct;
   }

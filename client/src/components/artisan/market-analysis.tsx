@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -14,8 +15,12 @@ import {
   Zap,
   Lightbulb,
   Target,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  Brain
 } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 const marketData = {
   localMarket: {
@@ -99,7 +104,12 @@ const recommendations = [
 ];
 
 export function MarketAnalysis() {
+  const { user } = useAuth();
   const [selectedProduct, setSelectedProduct] = useState('all');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+  const [customQuery, setCustomQuery] = useState('');
+  const [isCustomAnalyzing, setIsCustomAnalyzing] = useState(false);
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
@@ -119,6 +129,108 @@ export function MarketAnalysis() {
     }
   };
 
+  const generateAIAnalysis = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch('/api/ai/market-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userType: 'artisan',
+          businessType: user?.businessType || 'handcrafted goods',
+          location: user?.location || 'India',
+          products: selectedProduct,
+          userId: user?.id
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAiAnalysis(data);
+      } else {
+        const errorData = await response.json();
+        console.error('Market analysis API error:', errorData);
+        // Fallback to mock data if API fails
+        setAiAnalysis({
+          summary: "Based on current market trends, your handcrafted goods business shows strong potential in the sustainable and eco-friendly market segment. The local market is growing at 12.5% annually with increasing demand for unique, locally-made products.",
+          recommendations: [
+            "Focus on sustainability messaging to capture the growing eco-conscious market",
+            "Consider expanding into digital marketplaces to reach a broader audience",
+            "Implement dynamic pricing strategies based on seasonal demand patterns",
+            "Develop a strong social media presence to engage with younger demographics"
+          ],
+          marketInsights: {
+            trendingKeywords: ["sustainable", "handmade", "eco-friendly", "local artisan", "unique design"],
+            competitorGaps: ["Limited online presence", "Inconsistent quality", "Poor customer service"],
+            opportunities: ["Custom orders", "Subscription boxes", "Workshop experiences", "Corporate gifting"]
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error generating AI analysis:', error);
+      // Fallback to mock data
+      setAiAnalysis({
+        summary: "AI analysis temporarily unavailable. Using cached insights.",
+        recommendations: recommendations,
+        marketInsights: {
+          trendingKeywords: ["sustainable", "handmade", "eco-friendly"],
+          competitorGaps: ["Limited online presence"],
+          opportunities: ["Custom orders", "Workshop experiences"]
+        }
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateCustomAnalysis = async () => {
+    if (!customQuery.trim()) return;
+    
+    setIsCustomAnalyzing(true);
+    try {
+      const response = await fetch('/api/ai/custom-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: customQuery,
+          context: {
+            userType: 'artisan',
+            businessType: user?.businessType,
+            location: user?.location
+          }
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAiAnalysis(prev => ({
+          ...prev,
+          customAnalysis: data.analysis || data
+        }));
+      } else {
+        const errorData = await response.json();
+        console.error('Custom analysis API error:', errorData);
+        setAiAnalysis(prev => ({
+          ...prev,
+          customAnalysis: "Sorry, I couldn't process your request right now. Please try again later."
+        }));
+      }
+    } catch (error) {
+      console.error('Error generating custom analysis:', error);
+    } finally {
+      setIsCustomAnalyzing(false);
+    }
+  };
+
+  useEffect(() => {
+    // Generate initial analysis on component mount
+    generateAIAnalysis();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* AI Analysis Header */}
@@ -127,7 +239,7 @@ export function MarketAnalysis() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Zap className="w-6 h-6 text-primary" />
+                <Brain className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold">AI-Powered Market Analysis</h3>
@@ -136,11 +248,122 @@ export function MarketAnalysis() {
                 </p>
               </div>
             </div>
-            <Button>
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Generate New Analysis
+            <div className="flex space-x-2">
+              <Button 
+                onClick={generateAIAnalysis}
+                disabled={isGenerating}
+                variant="outline"
+              >
+                {isGenerating ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                )}
+                {isGenerating ? 'Analyzing...' : 'Refresh Analysis'}
+              </Button>
+              <Button onClick={generateAIAnalysis} disabled={isGenerating}>
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Generate New Analysis
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Summary */}
+      {aiAnalysis && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Brain className="w-5 h-5 mr-2 text-primary" />
+              AI Market Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose max-w-none">
+              <p className="text-muted-foreground leading-relaxed">
+                {aiAnalysis.summary}
+              </p>
+            </div>
+            
+            {aiAnalysis.marketInsights && (
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2 text-green-600">Trending Keywords</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {aiAnalysis.marketInsights.trendingKeywords?.map((keyword: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2 text-red-600">Competitor Gaps</h4>
+                  <ul className="text-sm space-y-1">
+                    {aiAnalysis.marketInsights.competitorGaps?.map((gap: string, index: number) => (
+                      <li key={index} className="flex items-center">
+                        <div className="w-1 h-1 bg-red-500 rounded-full mr-2" />
+                        {gap}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2 text-blue-600">Opportunities</h4>
+                  <ul className="text-sm space-y-1">
+                    {aiAnalysis.marketInsights.opportunities?.map((opportunity: string, index: number) => (
+                      <li key={index} className="flex items-center">
+                        <div className="w-1 h-1 bg-blue-500 rounded-full mr-2" />
+                        {opportunity}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Custom Analysis Query */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Zap className="w-5 h-5 mr-2 text-yellow-500" />
+            Ask AI Anything
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Ask specific questions about market trends, competitor analysis, pricing strategies, or any other business insights..."
+              value={customQuery}
+              onChange={(e) => setCustomQuery(e.target.value)}
+              rows={3}
+            />
+            <Button 
+              onClick={generateCustomAnalysis}
+              disabled={isCustomAnalyzing || !customQuery.trim()}
+              className="w-full sm:w-auto"
+            >
+              {isCustomAnalyzing ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Brain className="w-4 h-4 mr-2" />
+              )}
+              {isCustomAnalyzing ? 'Analyzing...' : 'Ask AI'}
             </Button>
           </div>
+          
+          {aiAnalysis?.customAnalysis && (
+            <div className="mt-6 p-4 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-2">AI Response:</h4>
+              <p className="text-sm text-muted-foreground">
+                {aiAnalysis.customAnalysis}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -361,21 +584,27 @@ export function MarketAnalysis() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recommendations.map((rec, index) => (
+                {(aiAnalysis?.recommendations || recommendations).map((rec: any, index: number) => (
                   <div key={index} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h4 className="font-semibold mb-2">{rec.title}</h4>
-                        <p className="text-sm text-muted-foreground">{rec.description}</p>
+                        <h4 className="font-semibold mb-2">
+                          {typeof rec === 'string' ? rec : rec.title}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {typeof rec === 'string' ? '' : rec.description}
+                        </p>
                       </div>
-                      <div className="flex space-x-2 ml-4">
-                        <Badge className={getImpactColor(rec.impact)}>
-                          Impact: {rec.impact}
-                        </Badge>
-                        <Badge className={getEffortColor(rec.effort)}>
-                          Effort: {rec.effort}
-                        </Badge>
-                      </div>
+                      {typeof rec === 'object' && rec.impact && (
+                        <div className="flex space-x-2 ml-4">
+                          <Badge className={getImpactColor(rec.impact)}>
+                            Impact: {rec.impact}
+                          </Badge>
+                          <Badge className={getEffortColor(rec.effort)}>
+                            Effort: {rec.effort}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                     <div className="flex space-x-2">
                       <Button size="sm" variant="outline">
